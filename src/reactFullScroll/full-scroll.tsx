@@ -22,7 +22,7 @@ import './full-scroll.scss';
 
 interface FullScrollProps {
   children: any;
-  activeKey?: string;
+  activeKey?: string | undefined;
   defaultKey?: string;
   direction?: 'vertical' | 'horizontal';
   transitionTime?: number;
@@ -30,6 +30,7 @@ interface FullScrollProps {
   addEventToDocument?: boolean;
   onReachBorder?: (direction: string) => void;
   onChange?: (key: string) => void;
+  onTransitionEnd?: (key: string) => void;
 }
 
 class FullScroll extends Component<FullScrollProps, any> {
@@ -66,8 +67,15 @@ class FullScroll extends Component<FullScrollProps, any> {
   }
 
   componentDidMount() {
-    this.setEvent();
+    const { activeKey } = this.props;
     this.setCurrentScreen();
+    if (activeKey === undefined) this.setEvent();
+  }
+
+  componentDidUpdate(beforeProps) {
+    const { activeKey: newKey } = this.props;
+    const { activeKey: oldKey } = beforeProps;
+    if (newKey !== oldKey) this.updateScreen(newKey, oldKey);
   }
 
   componentWillUnmount() {
@@ -207,23 +215,35 @@ class FullScroll extends Component<FullScrollProps, any> {
   };
 
   private setTransitionEndEvent = (nextElement, currentElement, nextIndex: number, currentIndex: number) => {
-    const { children } = this.props;
+    const { children, onTransitionEnd } = this.props;
     const instance = this;
     const eventType = 'transitionend';
     this.__transitionEvent__ = function(event) {
-      nextElement.style.transition = 'none';
-      currentElement.style.transition = 'none';
-      currentElement.classList.add(this.hideClass);
+      nextElement.style.transition = '';
+      currentElement.style.transition = '';
+      currentElement.classList.add(instance.hideClass);
       nextElement.removeEventListener(eventType, instance.__transitionEvent__);
       instance.__transitionEvent__ = null;
-      console.log('currentKey', children[nextIndex].key)
+      const lastKey = children[nextIndex].key;
       instance.setState({
-        currentKey: children[nextIndex].key,
+        currentKey: lastKey,
         isScrolling: false
+      }, () => {
+        onTransitionEnd && onTransitionEnd(lastKey);
       });
     };
     nextElement.addEventListener(eventType, this.__transitionEvent__);
   };
+
+  private updateScreen = (newKey: string | undefined, oldKey: string) => {
+    const { children } = this.props;
+    const keyList = children.map(child => child.key);
+    const newIndex = keyList.findIndex(key => key === newKey);
+    const oldIndex = keyList.findIndex(key => key === oldKey);
+    // 没有匹配到key,不进行操作
+    if (newIndex < 0 || oldIndex < 0) return;
+    this.startToggleScreen(newIndex > oldIndex ? 'bottom' : 'top', newIndex, oldIndex);
+  }
 
   render() {
     const { children } = this.props;
