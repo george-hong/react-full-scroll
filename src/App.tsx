@@ -11,7 +11,7 @@ const getColor = () => {
     return color;
 };
 // @ts-ignore
-const keyList: any = Array.apply(null, {length: 3}).map((i, index) => ({
+const keyList: any = Array.apply(null, {length: 12}).map((i, index) => ({
     key: index.toString(),
     content: `第${index}屏`,
     backgroundColor: getColor()
@@ -28,9 +28,11 @@ class App extends Component<any, any> {
     }
 
     private chooseScreen = (key) => {
-        const { isTransition } = this.state;
-        if (isTransition) return;
-        this.setState({activeKey: key + '', isTransition: true});
+        const { isTransition, activeKey, keyList } = this.state;
+        const isExist = keyList.find(keyInfo => keyInfo.key === key);
+        console.log('isTransition', isTransition, key, activeKey)
+        if (isTransition || (key === activeKey)) return;
+        if (isExist) this.setState({activeKey: key + '', isTransition: true});
     }
 
     private transitionEnd = () => {
@@ -41,13 +43,13 @@ class App extends Component<any, any> {
         const { activeKey, keyList } = this.state;
 
         const beforeButton = (
-            <button onClick={() => this.chooseScreen(activeKey - 1) }>
+            <button onClick={() => this.chooseScreen((activeKey - 1).toString()) }>
                 上一屏
             </button>
         )
 
         const nextButton = (
-            <button onClick={() => this.chooseScreen(activeKey - 0 + 1) }>
+            <button onClick={() => this.chooseScreen((activeKey - 0 + 1).toString()) }>
                 下一屏
             </button>
         )

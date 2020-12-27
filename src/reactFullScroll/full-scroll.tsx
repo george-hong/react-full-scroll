@@ -204,7 +204,7 @@ class FullScroll extends Component<FullScrollProps, any> {
           const transition = `${transitionProperty} ${transitionDuration}`
           currentElement.style.transition = transition;
           nextElement.style.transition = transition;
-          this.setTransitionEndEvent(nextElement, currentElement, nextIndex, currentIndex);
+          this.setTransitionEndEvent(nextElement, currentElement, nextIndex, currentIndex, currentElementNewClassName);
         }, toggleClassTime)
         .push(() => {
           currentElement.classList.add(currentElementNewClassName);
@@ -214,7 +214,7 @@ class FullScroll extends Component<FullScrollProps, any> {
     })
   };
 
-  private setTransitionEndEvent = (nextElement, currentElement, nextIndex: number, currentIndex: number) => {
+  private setTransitionEndEvent = (nextElement, currentElement, nextIndex: number, currentIndex: number, currentElementNewClassName: string) => {
     const { children, onTransitionEnd } = this.props;
     const instance = this;
     const eventType = 'transitionend';
@@ -222,6 +222,7 @@ class FullScroll extends Component<FullScrollProps, any> {
       nextElement.style.transition = '';
       currentElement.style.transition = '';
       currentElement.classList.add(instance.hideClass);
+      currentElement.classList.remove(currentElementNewClassName);
       nextElement.removeEventListener(eventType, instance.__transitionEvent__);
       instance.__transitionEvent__ = null;
       const lastKey = children[nextIndex].key;
