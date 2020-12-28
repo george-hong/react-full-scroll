@@ -219,19 +219,21 @@ class FullScroll extends Component<FullScrollProps, any> {
     const instance = this;
     const eventType = 'transitionend';
     this.__transitionEvent__ = function(event) {
-      nextElement.style.transition = '';
-      currentElement.style.transition = '';
-      currentElement.classList.add(instance.hideClass);
-      currentElement.classList.remove(currentElementNewClassName);
-      nextElement.removeEventListener(eventType, instance.__transitionEvent__);
-      instance.__transitionEvent__ = null;
-      const lastKey = children[nextIndex].key;
-      instance.setState({
-        currentKey: lastKey,
-        isScrolling: false
-      }, () => {
-        onTransitionEnd && onTransitionEnd(lastKey);
-      });
+      if (event.target === nextElement) {
+        nextElement.style.transition = '';
+        currentElement.style.transition = '';
+        currentElement.classList.add(instance.hideClass);
+        currentElement.classList.remove(currentElementNewClassName);
+        nextElement.removeEventListener(eventType, instance.__transitionEvent__);
+        instance.__transitionEvent__ = null;
+        const lastKey = children[nextIndex].key;
+        instance.setState({
+          currentKey: lastKey,
+          isScrolling: false
+        }, () => {
+          onTransitionEnd && onTransitionEnd(lastKey);
+        });
+      }
     };
     nextElement.addEventListener(eventType, this.__transitionEvent__);
   };

@@ -10,7 +10,6 @@
 
 
 import React, { Component } from 'react';
-import './full-scroll.scss';
 
 interface FullScrollItemProps {
   children?: React.ReactNode | String;

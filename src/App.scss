@@ -86,17 +86,5 @@ html{
     .screen {
         height: 100%;
         width: 100%;
-        &.first-screen {
-            background: pink;
-        }
-        &.second-screen {
-            background: skyblue;
-        }
-        &.third-screen {
-            background: gray;
-        }
-        &.fourth-screen {
-            background: orange;
-        }
     }
 }
