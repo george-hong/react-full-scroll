@@ -69,13 +69,14 @@ class FullScroll extends Component<FullScrollProps, any> {
   componentDidMount() {
     const { activeKey } = this.props;
     this.setCurrentScreen();
-    if (activeKey === undefined) this.setEvent();
+    this.setEvent();
   }
 
   componentDidUpdate(beforeProps) {
     const { activeKey: newKey } = this.props;
     const { activeKey: oldKey } = beforeProps;
-    if (newKey !== oldKey) this.updateScreen(newKey, oldKey);
+    const { isScrolling } = this.state;
+    if (newKey !== oldKey && !isScrolling) this.updateScreen(newKey, oldKey);
   }
 
   componentWillUnmount() {
@@ -155,9 +156,13 @@ class FullScroll extends Component<FullScrollProps, any> {
         return onReachBorder && onReachBorder(direction);
       }
       const nextIndex = direction === 'top' ? (currentIndex - 1) : (currentIndex + 1);
-      this.startToggleScreen(direction, nextIndex, currentIndex)
+      const nextKey = children[nextIndex].key;
+      this.setState({ currentKey: nextKey }, () => {
+        this.startToggleScreen(direction, nextIndex, currentIndex)
+      });
     } else {
-      throw new Error('没有匹配到当前key');
+      // throw new Error('没有匹配到当前key');
+      console.log(`没有匹配到当前key:${currentKey}`, currentKey)
     }
 
   }
@@ -170,7 +175,7 @@ class FullScroll extends Component<FullScrollProps, any> {
 
   // 开始切换屏幕
   private startToggleScreen = (direction: 'top' | 'bottom', nextIndex: number, currentIndex: number) => {
-    this.setState({isScrolling: true }, () => {
+    this.setState({ isScrolling: true }, () => {
       const { toggleClassTime, direction: transitionDirection } = this.props;
       const { transitionDuration } = this.state;
       const childrenElement = this.containerRef.children;
@@ -193,47 +198,48 @@ class FullScroll extends Component<FullScrollProps, any> {
         currentElementNewClassName = this.classOfRight;
       }
       new LoopPromise()
-        .push(() => {
-          currentElement.classList.remove(this.activeClass);
-          currentElement.classList.remove(this.hideClass);
-          nextElement.classList.remove(this.hideClass);
-          nextElement.classList.add(nextElementNewClassName);
-          nextElement.classList.add(this.activeClass);
-        })
-        .push(() => {
-          const transition = `${transitionProperty} ${transitionDuration}`
-          currentElement.style.transition = transition;
-          nextElement.style.transition = transition;
-          this.setTransitionEndEvent(nextElement, currentElement, nextIndex, currentIndex, currentElementNewClassName);
-        }, toggleClassTime)
-        .push(() => {
-          currentElement.classList.add(currentElementNewClassName);
-          nextElement.classList.remove(nextElementNewClassName);
-        }, toggleClassTime)
-        .start();
-    })
+          .push(() => {
+            currentElement.classList.remove(this.activeClass);
+            currentElement.classList.remove(this.hideClass);
+            nextElement.classList.remove(this.hideClass);
+            nextElement.classList.add(nextElementNewClassName);
+            nextElement.classList.add(this.activeClass);
+          })
+          .push(() => {
+            const transition = `${transitionProperty} ${transitionDuration}`
+            currentElement.style.transition = transition;
+            nextElement.style.transition = transition;
+            this.setTransitionEndEvent(nextElement, currentElement, nextIndex, currentIndex, currentElementNewClassName);
+          }, toggleClassTime)
+          .push(() => {
+            currentElement.classList.add(currentElementNewClassName);
+            nextElement.classList.remove(nextElementNewClassName);
+          }, toggleClassTime)
+          .start();
+    });
   };
 
   private setTransitionEndEvent = (nextElement, currentElement, nextIndex: number, currentIndex: number, currentElementNewClassName: string) => {
     const { children, onTransitionEnd } = this.props;
     const instance = this;
     const eventType = 'transitionend';
-    this.__transitionEvent__ = function(event) {
-      nextElement.style.transition = '';
-      currentElement.style.transition = '';
-      currentElement.classList.add(instance.hideClass);
-      currentElement.classList.remove(currentElementNewClassName);
-      nextElement.removeEventListener(eventType, instance.__transitionEvent__);
-      instance.__transitionEvent__ = null;
-      const lastKey = children[nextIndex].key;
-      instance.setState({
-        currentKey: lastKey,
-        isScrolling: false
-      }, () => {
-        onTransitionEnd && onTransitionEnd(lastKey);
-      });
+    const transitionEvent = function(event) {
+      if (event.target === nextElement) {
+        nextElement.style.transition = '';
+        currentElement.style.transition = '';
+        currentElement.classList.add(instance.hideClass);
+        currentElement.classList.remove(currentElementNewClassName);
+        nextElement.removeEventListener(eventType, transitionEvent);
+        const lastKey = children[nextIndex].key;
+        instance.setState({
+          currentKey: lastKey,
+          isScrolling: false
+        }, () => {
+          onTransitionEnd && onTransitionEnd(lastKey);
+        });
+      }
     };
-    nextElement.addEventListener(eventType, this.__transitionEvent__);
+    nextElement.addEventListener(eventType, transitionEvent);
   };
 
   private updateScreen = (newKey: string | undefined, oldKey: string) => {
