@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "sourceMap": true,
+        "noImplicitAny": false,
+        "esModuleInterop": true,
+        "target": "es5",
+        "jsx": "react"
+    },
+    "include": [
+        "./src/**/*"
+    ]
+}
