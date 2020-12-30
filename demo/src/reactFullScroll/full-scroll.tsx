@@ -67,7 +67,6 @@ class FullScroll extends Component<FullScrollProps, any> {
   }
 
   componentDidMount() {
-    const { activeKey } = this.props;
     this.setCurrentScreen();
     this.setEvent();
   }
@@ -164,13 +163,6 @@ class FullScroll extends Component<FullScrollProps, any> {
       // throw new Error('没有匹配到当前key');
       console.log(`没有匹配到当前key:${currentKey}`, currentKey)
     }
-
-  }
-
-  // 获取子元素的键值列表
-  private getKeyList = () => {
-    const { children } = this.props;
-    console.log(children)
   }
 
   // 开始切换屏幕

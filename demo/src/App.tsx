@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import './App.scss';
-import FullScroll from './reactFullScroll/full-scroll';
+// import FullScroll from './reactFullScroll/full-scroll';
+import FullScroll from '../../lib/bundle';
 
 const getRandomColorNumberItem = () => {
     return Math.floor(Math.random() * 255);

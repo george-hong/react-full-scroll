@@ -18,7 +18,7 @@
 import React, { Component } from 'react';
 import FullScrollItem from './full-scroll-item';
 import { LoopPromise } from './util';
-import './full-scroll.less';
+import './full-scroll.scss';
 
 interface FullScrollProps {
   children: any;
