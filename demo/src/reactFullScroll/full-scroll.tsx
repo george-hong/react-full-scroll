@@ -24,7 +24,7 @@ import './full-scroll.scss';
 
 interface FullScrollProps {
   children: any;
-  defaultKey: string;
+  defaultKey?: string;
   className?: string;
   direction?: 'vertical' | 'horizontal';
   transitionTime?: number;
@@ -62,8 +62,8 @@ class FullScroll extends Component<FullScrollProps, any> {
       eventType: null,                                          // 鼠标滚轮滚动事件类型，浏览器不同则可能不同
       eventTarget: null,                                        // 滚轮滚动事件的目标，默认为组件根节点，可通过 addEventToDocument 改为document
       isScrolling: false,                                       // 是否正在滚动
-      currentKey: defaultKeyInfo.key,                  // 当前激活的key
-      currentIndex: defaultKeyInfo.index,
+      currentKey: defaultKeyInfo.key,                           // 当前激活的key
+      currentIndex: defaultKeyInfo.index,                       // 当前激活的index
       transitionDuration: `${transitionTime / 1000}s`,          // 过渡动画时长
     }
   }
@@ -93,7 +93,7 @@ class FullScroll extends Component<FullScrollProps, any> {
 
   private getDefaultCurrentKey = () => {
     const { defaultKey, children } = this.props;
-    let key = '';
+    let key: any = '';
     let index = -1;
     if (children && children.length) {
       key = children[0].key;

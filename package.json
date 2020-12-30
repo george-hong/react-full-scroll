@@ -1,6 +1,6 @@
 {
   "name": "react-full-scroll",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "lib/bundle.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -56,7 +56,9 @@
     "react",
     "react full scroll",
     "full scroll",
-    "scroll"
+    "scroll",
+    "全屏滚动",
+    "滚动插件"
   ],
   "description": "",
   "files": [
