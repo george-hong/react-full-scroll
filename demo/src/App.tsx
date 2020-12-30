@@ -19,38 +19,42 @@ const keyList: any = Array.apply(null, {length: 12}).map((i, index) => ({
 }))
 
 class App extends Component<any, any> {
+    fullScrollRef: any = null;
+
     constructor(props) {
         super(props);
         this.state = {
             activeKey: keyList[0].key,
-            keyList,
-            isTransition: false,
+            keyList
         }
     }
 
     private chooseScreen = (key) => {
-        const { isTransition, activeKey, keyList } = this.state;
-        const isExist = keyList.find(keyInfo => keyInfo.key === key);
-        console.log('isTransition', isTransition, key, activeKey)
-        if (isTransition || (key === activeKey)) return;
-        if (isExist) this.setState({activeKey: key + '', isTransition: true});
+        const { fullScrollRef } = this;
+        if (fullScrollRef) fullScrollRef.toggleScreen(key);
     }
 
-    private transitionEnd = () => {
-        this.setState({ isTransition: false })
+    private nextScreen = () => {
+        const { fullScrollRef } = this;
+        if (fullScrollRef) fullScrollRef.nextScreen();
+    }
+
+    private prevScreen = () => {
+        const { fullScrollRef } = this;
+        if (fullScrollRef) fullScrollRef.prevScreen();
     }
 
     render() {
-        const { activeKey, keyList } = this.state;
+        const { keyList } = this.state;
 
         const beforeButton = (
-            <button onClick={() => this.chooseScreen((activeKey - 1).toString()) }>
+            <button onClick={this.prevScreen}>
                 上一屏
             </button>
         )
 
         const nextButton = (
-            <button onClick={() => this.chooseScreen((activeKey - 0 + 1).toString()) }>
+            <button onClick={this.nextScreen}>
                 下一屏
             </button>
         )
@@ -59,8 +63,10 @@ class App extends Component<any, any> {
             <div className="home-page">
                 <FullScroll
                     // activeKey={activeKey}
+                    // defaultKey="3"
+                    // disabledMouseScroll
                     addEventToDocument
-                    onTransitionEnd={this.transitionEnd}
+                    ref={ref => this.fullScrollRef = ref}
                 >
                     {
                         keyList.map(keyInfo => (

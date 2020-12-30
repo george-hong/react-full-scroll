@@ -5,12 +5,14 @@
  * @Title：全屏滚动组件
  * @Prop：{
  *    children: 内容,
- *    [activeKey]: 当前激活的页面key,
- *    [defaultKey]: 默认key,
+ *    [activeKey]: 当前激活的页面key 暂不支持,
+ *    [defaultKey]: 默认key default '',
+ *    [className]: {String} 自定义类名,
  *    [direction]: 全屏滑动方向 default vertical,
- *    [addEventToDocument]: 是否将事件添加到document元素上
- *    [onReachBorder]: 到达边界事件，
- *    [onChange]: key值变更事件，
+ *    [addEventToDocument]: 是否将事件添加到document元素上,
+ *    [onReachBorder]: 到达边界事件,
+ *    [onChange]: key值变更事件,
+ *    [disabledMouseScroll]: {Boolean} 是否禁用鼠标滚轮滚动事件 default false
  * }
  */
 
@@ -22,8 +24,8 @@ import './full-scroll.scss';
 
 interface FullScrollProps {
   children: any;
-  activeKey?: string | undefined;
-  defaultKey?: string;
+  defaultKey: string;
+  className?: string;
   direction?: 'vertical' | 'horizontal';
   transitionTime?: number;
   toggleClassTime?: number;
@@ -31,6 +33,7 @@ interface FullScrollProps {
   onReachBorder?: (direction: string) => void;
   onChange?: (key: string) => void;
   onTransitionEnd?: (key: string) => void;
+  disabledMouseScroll?: boolean;
 }
 
 class FullScroll extends Component<FullScrollProps, any> {
@@ -38,10 +41,11 @@ class FullScroll extends Component<FullScrollProps, any> {
   static defaultProps = {
     addEventToDocument: false,
     direction: 'vertical',
+    defaultKey: '',
     transitionTime: 1000,
     toggleClassTime:  50,
+    disabledMouseScroll: false
   };
-  __transitionEvent__: any = null;
   activeClass = 'full-scroll-item-component-active';
   hideClass = 'full-scroll-item-component-hide';
   classOfTop = 'full-scroll-item-component-on-top';
@@ -51,13 +55,15 @@ class FullScroll extends Component<FullScrollProps, any> {
   containerRef: any = null;
   constructor(props) {
     super(props);
-    const { defaultKey, activeKey, children, transitionTime } = props;
+    const { transitionTime } = props;
+    const defaultKeyInfo = this.getDefaultCurrentKey();
     this.state = {
-      isFireFox: this.checkIsFireFox(),       // 当前是否为火狐浏览器
-      eventType: null,                        // 鼠标滚轮滚动事件类型，浏览器不同则可能不同
-      eventTarget: null,                      // 滚轮滚动事件的目标，默认为组件根节点，可通过 addEventToDocument 改为document
-      isScrolling: false,                     // 是否正在滚动
-      currentKey: defaultKey || activeKey || children[0].key,   // 当前激活的key
+      isFireFox: this.checkIsFireFox(),                         // 当前是否为火狐浏览器
+      eventType: null,                                          // 鼠标滚轮滚动事件类型，浏览器不同则可能不同
+      eventTarget: null,                                        // 滚轮滚动事件的目标，默认为组件根节点，可通过 addEventToDocument 改为document
+      isScrolling: false,                                       // 是否正在滚动
+      currentKey: defaultKeyInfo.key,                  // 当前激活的key
+      currentIndex: defaultKeyInfo.index,
       transitionDuration: `${transitionTime / 1000}s`,          // 过渡动画时长
     }
   }
@@ -67,17 +73,16 @@ class FullScroll extends Component<FullScrollProps, any> {
   }
 
   componentDidMount() {
-    const { activeKey } = this.props;
     this.setCurrentScreen();
     this.setEvent();
   }
 
-  componentDidUpdate(beforeProps) {
-    const { activeKey: newKey } = this.props;
-    const { activeKey: oldKey } = beforeProps;
-    const { isScrolling } = this.state;
-    if (newKey !== oldKey && !isScrolling) this.updateScreen(newKey, oldKey);
-  }
+  // componentDidUpdate(beforeProps) {
+  //   const { activeKey: newKey } = this.props;
+  //   const { activeKey: oldKey } = beforeProps;
+  //   const { isScrolling } = this.state;
+  //   if (newKey !== oldKey && !isScrolling) this.updateScreen(newKey, oldKey);
+  // }
 
   componentWillUnmount() {
     const { eventType, eventTarget } = this.state
@@ -86,13 +91,32 @@ class FullScroll extends Component<FullScrollProps, any> {
     }
   }
 
+  private getDefaultCurrentKey = () => {
+    const { defaultKey, children } = this.props;
+    let key = '';
+    let index = -1;
+    if (children && children.length) {
+      key = children[0].key;
+      index = 0;
+      const matchIndex = children.findIndex(child => child.key === defaultKey);
+      if (matchIndex > -1) {
+        key = defaultKey;
+        index = matchIndex;
+      }
+    }
+    return {
+      key,
+      index
+    };
+  }
+
   // 判断子元素是否合法
   private checkChildren = () => {
     const { children } = this.props;
     children.forEach(child => {
       if (child.type !== FullScrollItem) throw new Error('full-scroll的子元素必须为full-scroll-item');
     });
-  }
+  };
 
   // 判断是否火狐浏览器
   private checkIsFireFox = () => {
@@ -143,7 +167,9 @@ class FullScroll extends Component<FullScrollProps, any> {
 
   // 滚动鼠标滚轮事件
   private scrollMouseEvent = (event) => {
+    const { disabledMouseScroll } = this.props;
     const { currentKey, isScrolling } = this.state;
+    if (disabledMouseScroll) return;
     // 防抖
     if (isScrolling) return;
     const { children, onReachBorder } = this.props;
@@ -164,13 +190,6 @@ class FullScroll extends Component<FullScrollProps, any> {
       // throw new Error('没有匹配到当前key');
       console.log(`没有匹配到当前key:${currentKey}`, currentKey)
     }
-
-  }
-
-  // 获取子元素的键值列表
-  private getKeyList = () => {
-    const { children } = this.props;
-    console.log(children)
   }
 
   // 开始切换屏幕
@@ -219,6 +238,7 @@ class FullScroll extends Component<FullScrollProps, any> {
     });
   };
 
+  // 设置过渡事件
   private setTransitionEndEvent = (nextElement, currentElement, nextIndex: number, currentIndex: number, currentElementNewClassName: string) => {
     const { children, onTransitionEnd } = this.props;
     const instance = this;
@@ -233,6 +253,7 @@ class FullScroll extends Component<FullScrollProps, any> {
         const lastKey = children[nextIndex].key;
         instance.setState({
           currentKey: lastKey,
+          currentIndex: nextIndex,
           isScrolling: false
         }, () => {
           onTransitionEnd && onTransitionEnd(lastKey);
@@ -242,8 +263,33 @@ class FullScroll extends Component<FullScrollProps, any> {
     nextElement.addEventListener(eventType, transitionEvent);
   };
 
+  // 切换到指定屏幕
+  private toggleScreen = (key: string) => {
+    const { currentKey } = this.state;
+    this.updateScreen(key, currentKey);
+  };
+
+  private nextScreen = () => {
+    this.toggleRoundScreen(true);
+  };
+
+  private prevScreen = () => {
+    this.toggleRoundScreen(false);
+  };
+
+  private toggleRoundScreen = (isNext: boolean) => {
+    const { children } = this.props;
+    const { currentIndex } = this.state;
+    const nextIndex = isNext ? (currentIndex + 1) : (currentIndex - 1);
+    const nextKey = (children[nextIndex] && children[nextIndex].key);
+    if (nextKey) this.toggleScreen(nextKey);
+  }
+
+  // 更新屏幕内容
   private updateScreen = (newKey: string | undefined, oldKey: string) => {
     const { children } = this.props;
+    const { isTransition } = this.state;
+    if (isTransition) return;
     const keyList = children.map(child => child.key);
     const newIndex = keyList.findIndex(key => key === newKey);
     const oldIndex = keyList.findIndex(key => key === oldKey);
@@ -253,11 +299,12 @@ class FullScroll extends Component<FullScrollProps, any> {
   }
 
   render() {
-    const { children } = this.props;
-
+    const { children, className } = this.props;
+    let realClass = 'full-scroll-component';
+    if (className) realClass += ` ${className}`;
     return (
       <div
-        className="full-scroll-component"
+        className={realClass}
         ref={ ref => this.containerRef = ref }
       >
         { children }
