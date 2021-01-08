@@ -9,7 +9,7 @@
  *    [defaultKey]: 默认key default '',
  *    [className]: {String} 自定义类名,
  *    [direction]: 全屏滑动方向 default vertical,
- *    [addEventToDocument]: 是否将事件添加到document元素上,
+ *    [addEventToWindow]: 是否将事件添加到window对象上,
  *    [onReachBorder]: 到达边界事件,
  *    [onChange]: key值变更事件,
  *    [disabledMouseScroll]: {Boolean} 是否禁用鼠标滚轮滚动事件 default false
@@ -29,7 +29,7 @@ interface FullScrollProps {
   direction?: 'vertical' | 'horizontal';
   transitionTime?: number;
   toggleClassTime?: number;
-  addEventToDocument?: boolean;
+  addEventToWindow?: boolean;
   onReachBorder?: (direction: string) => void;
   onChange?: (key: string) => void;
   onTransitionEnd?: (key: string) => void;
@@ -39,14 +39,14 @@ interface FullScrollProps {
 class FullScroll extends Component<FullScrollProps, any> {
   static Item = FullScrollItem;
   static defaultProps = {
-    addEventToDocument: false,
+    addEventToWindow: false,
     direction: 'vertical',
     defaultKey: '',
     transitionTime: 1000,
     toggleClassTime:  50,
     disabledMouseScroll: false
   };
-  activeClass = 'full-scroll-item-component-active';
+  activeClass = 'full-scroll-item-co3mponent-active';
   hideClass = 'full-scroll-item-component-hide';
   classOfTop = 'full-scroll-item-component-on-top';
   classOfBottom = 'full-scroll-item-component-on-bottom';
@@ -60,7 +60,7 @@ class FullScroll extends Component<FullScrollProps, any> {
     this.state = {
       isFireFox: this.checkIsFireFox(),                         // 当前是否为火狐浏览器
       eventType: null,                                          // 鼠标滚轮滚动事件类型，浏览器不同则可能不同
-      eventTarget: null,                                        // 滚轮滚动事件的目标，默认为组件根节点，可通过 addEventToDocument 改为document
+      eventTarget: null,                                        // 滚轮滚动事件的目标，默认为组件根节点，可通过 addEventToWindow 改为Window
       isScrolling: false,                                       // 是否正在滚动
       currentKey: defaultKeyInfo.key,                           // 当前激活的key
       currentIndex: defaultKeyInfo.index,                       // 当前激活的index
@@ -127,10 +127,10 @@ class FullScroll extends Component<FullScrollProps, any> {
   // 注册全屏滚动事件
   private setEvent = () => {
     const { containerRef } = this;
-    const { addEventToDocument } = this.props;
+    const { addEventToWindow } = this.props;
     const { isFireFox } = this.state;
     const eventType = isFireFox ? 'DOMMouseScroll' : 'mousewheel';
-    const eventTarget = addEventToDocument ? document : containerRef;
+    const eventTarget = addEventToWindow ? window : containerRef;
     if (eventTarget) {
       eventTarget.addEventListener(eventType, this.scrollMouseEvent)
       this.setState({

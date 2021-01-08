@@ -65,7 +65,7 @@ class App extends Component<any, any> {
                     // activeKey={activeKey}
                     // defaultKey="3"
                     // disabledMouseScroll
-                    addEventToDocument
+                    addEventToWindow
                     ref={ref => this.fullScrollRef = ref}
                 >
                     {

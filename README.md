@@ -40,7 +40,7 @@ class Demo extends Component {
 |disabledMouseScroll|false|禁用鼠标滚轮事件|false|
 |transitionTime|false|滑动过渡时间ms|1000|
 |toggleClassTime|false|切换动画class间隔ms|50|
-|addEventToDocument|false|是否将鼠标事件添加到document元素|false|
+|addEventToWindow|false|是否将鼠标事件添加到Window|false|
 |onReachBorder|false|到达屏幕边界事件|-|
 |onChange|false|屏幕切换事件|-|
 |onTransitionEnd|false|过渡结束事件|-|
